@@ -1,6 +1,6 @@
 import express from 'express';
 import initWebRoute from './router/web';
-import configViewEngine from './configs/viewEngine';
+import configViewEngine from './config/viewEngine';
 import 'dotenv/config'
 
 
