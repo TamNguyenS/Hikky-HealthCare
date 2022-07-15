@@ -7,8 +7,7 @@ const initWebRoute = (app) => {
     router.get('/', homeController.getHomepage);
     router.get('/test', homeController.getTest);
 
-    return app.use('/', router);
+    return app.use("/", router);
 }
 
 export default initWebRoute;
-

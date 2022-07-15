@@ -1,7 +1,8 @@
 import express from 'express';
-import initWebRoute from './router/web';
 import configViewEngine from './config/viewEngine';
 import connectDB from './config/connectDB';
+import initWebRoute from './router/web';
+import initApiRoute from './router/api';
 import 'dotenv/config'
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(express.json());
 
 configViewEngine(app);
 initWebRoute(app);
+initApiRoute(app);
 
 connectDB();
 

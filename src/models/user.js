@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     address: DataTypes.STRING,
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
-    gender: DataTypes.BOOLEAN,
+    gender: DataTypes.BOOLEAN === '1' ? true : false,
     roleId: DataTypes.STRING,
     positionId: DataTypes.STRING,
     image: DataTypes.TEXT,
