@@ -1,12 +1,16 @@
 import db from '../models/index';
-import userService from '../services/userService';
+import userService from '../services/user.service';
+
 let registerUser = async (req, res) => {
     console.log('>>working on : registerUser');
-    await userService.createNewUser(req.body);
-    return res.status(200).json({ message: 'register user' });
+    let message = await userService.createNewUser(req.body);
+    return res.status(200).json(message);
 }
+
 let loginUser = async (req, res) => {
+    
 }
+
 let getAllUsers = async (req, res) => {
     console.log('>>working on : getAllUsers');
     return res.status(200).json({
@@ -23,7 +27,6 @@ let deleteUser = async (req, res) => {
 }
 let updateUser = async (req, res) => {
     console.log('>>working on : updateUser');
-
     return res.status(200).json({ message: 'update user' });
 }
 

@@ -1,8 +1,8 @@
 import express from 'express';
-import configViewEngine from './config/viewEngine';
-import connectDB from './config/connectDB';
-import initWebRoute from './router/web';
-import initApiRoute from './router/api';
+import configViewEngine from './config/viewEngine.config';
+import connectDB from './config/connectDB.config';
+import initWebRoute from './router/web.router';
+import initApiRoute from './router/api.router';
 import 'dotenv/config'
 
 const app = express();
