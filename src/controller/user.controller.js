@@ -8,7 +8,9 @@ let registerUser = async (req, res) => {
 }
 
 let loginUser = async (req, res) => {
-    
+    console.log('>>working on : loginUser');
+    let messenge = await userService.loginUser(req.body.userName, req.body.password);
+    return res.status(200).json(messenge);
 }
 
 let getAllUsers = async (req, res) => {

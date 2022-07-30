@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Doctor_info.init({
-        userId: DataTypes.INTEGER,
+        userId: DataTypes.STRING,
         specialtyId: DataTypes.INTEGER,
         description: DataTypes.TEXT,
         count: DataTypes.INTEGER,

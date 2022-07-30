@@ -1,13 +1,15 @@
 import bcrypt from 'bcryptjs';
 import db from '../models/index';
 
-var salt = bcrypt.genSaltSync(10);
+const salt = bcrypt.genSaltSync(10);
+const salt1 = bcrypt.genSaltSync(1);
 const regexMail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 // handle user login
 let loginUser = async (userName, password) => {
     return new Promise(async (resolve, reject) => {
         let result;
+
         try {
             // if (validateEmail(userName)) {
             //     result = await db.Users.findOne({ where: { email: userName, password: password } });
@@ -15,7 +17,9 @@ let loginUser = async (userName, password) => {
             // else {
             //     result = await db.Users.findOne({ where: { userName: userName, password: password } });
             // }
-            validateEmail(userName) ? result = await db.Users.findOne({ where: { email: userName, password: password } }) : result = await db.Users.findOne({ where: { userName: userName, password: password } });
+            const case1 = db.Users.findOne({ where: { email: userName, password: password } });
+            const case2 = db.Users.findOne({ where: { userName: userName, password: password } });
+            validateEmail(userName) ? result = await case1 : result = await case2
             if (result) {
                 resolve({
                     process: 0,
@@ -47,7 +51,9 @@ let createNewUser = async (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             let passwordHash = await hashUserPassword(data.password);
+            let idHash = await hashUserId(data.userName);
             await db.User.create({
+                id: idHash,
                 userName: data.userName,
                 password: passwordHash,
                 firstName: data.firstName,
@@ -92,7 +98,19 @@ let hashUserPassword = async (password) => {
         }
     })
 }
-
+//hash user id 
+let hashUserId = async (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let hashpass = await bcrypt.hashSync(id, salt1);
+            resolve(hashpass);
+        }
+        catch (err) {
+            console.le(`error from hashUserId${err.message}`);
+            reject(` error from hashUserId ${err.message}`);
+        }
+    })
+}
 // validate email
 let validateEmail = (email) => {
     let vaidateMail = email.match(regexMail);
@@ -102,6 +120,7 @@ let validateEmail = (email) => {
     return false;
 }
 
+
 module.exports = {
-    createNewUser,
+    createNewUser, loginUser
 }

@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Schedule_info.init({
     price: DataTypes.FLOAT,
-    doctorId: DataTypes.INTEGER,
+    doctorId: DataTypes.STRING,
     name: DataTypes.STRING
   }, {
     sequelize,
