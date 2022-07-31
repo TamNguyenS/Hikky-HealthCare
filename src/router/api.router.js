@@ -1,10 +1,14 @@
 import express from 'express';
 import userController from '../controller/user.controller';
-
+// import { validateUserRegistration, schemas } from '../middleware/user.middleware';
+// import validateUserRegistration from '../middleware/user.middleware';
+// import schemas from './middleware/user.middleware';
+// const { validateUserRegistration, schemas } = require('../middleware/user.middleware');
+import { validateUserRegistration, schemas } from '../middleware/user.middleware';
 const router = express.Router();
 
 const initApiRoute = (app) => {
-    router.post('/register', userController.registerUser);
+    router.post('/register', validateUserRegistration(schemas.registerUserSchema), userController.registerUser);
     router.post('/login', userController.loginUser);
     router.get('/get-all-users', userController.getAllUsers);
     router.post('/create-user', userController.createUser);
