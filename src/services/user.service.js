@@ -1,28 +1,24 @@
 import bcrypt from 'bcryptjs';
 import db from '../models/index';
+import md5 from 'md5';
 
 const salt = bcrypt.genSaltSync(10);
-const salt1 = bcrypt.genSaltSync(1);
-const regexMail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 // handle user login
 let loginUser = async (userName, password) => {
     return new Promise(async (resolve, reject) => {
-        let result;
 
         try {
-            // if (validateEmail(userName)) {
-            //     result = await db.Users.findOne({ where: { email: userName, password: password } });
-            // }
-            // else {
-            //     result = await db.Users.findOne({ where: { userName: userName, password: password } });
-            // }
-            const case1 = db.Users.findOne({ where: { email: userName, password: password } });
-            const case2 = db.Users.findOne({ where: { userName: userName, password: password } });
-            validateEmail(userName) ? result = await case1 : result = await case2
-            if (result) {
+            let hashpass = await bcrypt.hashSync(password, salt);
+            console.log('>>>check password login', hashpass);
+            console.log('>>>check username login', userName);
+            const case1 = await db.User.count({ where: { email: userName, password: hashpass } });
+            const case2 = await db.User.count({ where: { userName: userName, password: hashpass } });
+
+            if (case1 === 1 || case2 === 1) {
                 resolve({
                     process: 0,
+                    susscess: true,
                     message: 'Login successfully',
                     data: result
                 });
@@ -30,13 +26,14 @@ let loginUser = async (userName, password) => {
             else {
                 resolve({
                     process: 1,
+                    susscess: false,
                     message: 'User name or password is incorrect'
                 });
             }
 
         }
         catch (err) {
-            console.le(`error from createNewUser ${err.message}`)
+            console.log(`error from loginUser ${err.message}`)
             reject({
                 process: 1,
                 message: 'User name or password is incorrect'
@@ -51,7 +48,7 @@ let createNewUser = async (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             let passwordHash = await hashUserPassword(data.password);
-            let idHash = await hashUserId(data.userName);
+            let idHash = md5(data.userName);
             await db.User.create({
                 id: idHash,
                 userName: data.userName,
@@ -69,6 +66,7 @@ let createNewUser = async (data) => {
             })
             resolve({
                 process: 0,
+                susscess: true,
                 message: 'Register successfully'
             });
         }
@@ -76,6 +74,7 @@ let createNewUser = async (data) => {
             console.le(`error from createNewUser ${err.message}`)
             reject({
                 process: 1,
+                susscess: true,
                 message: 'Something went wrong'
             });
 
@@ -97,27 +96,6 @@ let hashUserPassword = async (password) => {
             reject(` error from hashUserPassword ${err.message}`);
         }
     })
-}
-//hash user id 
-let hashUserId = async (id) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let hashpass = await bcrypt.hashSync(id, salt1);
-            resolve(hashpass);
-        }
-        catch (err) {
-            console.le(`error from hashUserId${err.message}`);
-            reject(` error from hashUserId ${err.message}`);
-        }
-    })
-}
-// validate email
-let validateEmail = (email) => {
-    let vaidateMail = email.match(regexMail);
-    if (vaidateMail) {
-        return true;
-    }
-    return false;
 }
 
 

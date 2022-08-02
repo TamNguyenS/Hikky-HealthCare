@@ -1,5 +1,6 @@
 /node_modules
+.evn
+.evn.ex
 /vendor
 /.idea
 .idea/
-/.evn

@@ -1,0 +1,6 @@
+PORT=8088
+NODE_ENV=hikkywannafly
+DATABASE=hikkywannafly
+USERNAME=hikkywannafly
+PASSWORD=hikkywannafly
+JWT_SECRET=hikkywannafly
