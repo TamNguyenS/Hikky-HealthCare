@@ -3,6 +3,10 @@ import db from '../models/index';
 let phoneExit = false;
 let emailExit = false;
 let usernameExit = false;
+const ROLES = [];
+const emailExits = 'Email is already in use';
+const phoneExits = 'Phone is already in use';
+const userName = 'Email is already in use';
 
 const validateUserRegistration = (schema) => {
     return async (req, res, next) => {
@@ -10,9 +14,9 @@ const validateUserRegistration = (schema) => {
             const errorBody = await schema.validate(req.body, { abortEarly: false });
             console.log(`>>>check error body ` + JSON.stringify(errorBody.error));
 
-            const checkPhone = await isExits(`phone`, req.body.phone);
-            const checkUsername = await isExits(`userName`, req.body.userName);
-            const checkEmail = await isExits(`email`, req.body.email);
+            const checkPhone = await isExist(`phone`, req.body.phone);
+            const checkUsername = await isExist(`userName`, req.body.userName);
+            const checkEmail = await isExist(`email`, req.body.email);
 
             checkPhone === false ? phoneExit = false : phoneExit = true;
             checkUsername === false ? usernameExit = false : usernameExit = true;
@@ -72,7 +76,7 @@ const validateUserLogin = (schema) => {
     }
 }
 
-const isExits = async (type, data) => {
+const isExist = async (type, data) => {
     const count = await db.User.count({
         where: { [type]: `${data}` },
     });
@@ -81,6 +85,19 @@ const isExits = async (type, data) => {
     }
     return false;
 }
+const checkRolesExisted = (req, res, next) => {
+    if (req.body.roles) {
+      for (let i = 0; i < req.body.roles.length; i++) {
+        if (!ROLES.includes(req.body.roles[i])) {
+          res.status(400).send({
+            message: "Failed! Role does not exist = " + req.body.roles[i]
+          });
+          return;
+        }
+      }
+    }
+    next();
+  }
 // custom validation for user name but i'm lazy enough
 const schemas = {
     registerUserSchema: Joi.object().keys({
@@ -103,8 +120,13 @@ const schemas = {
         image: Joi.string().required(),
     }),
     authLoginUser: Joi.object().keys({
-        userName: Joi.string().required().messages({}),
-        password: Joi.string().regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/).max(30).required(),
+        userName: Joi.string().required().messages({
+            'string.empty': `"userName not allow empty`,
+        }),
+        password: Joi.string().required().messages({
+            'string.empty': `"password not allow empty`,
+        }),
+
     }),
 }
 

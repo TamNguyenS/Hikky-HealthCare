@@ -34,8 +34,6 @@ const loginUser = async (req, res) => {
 
     console.log('>>working on : loginUser');
 
-    console.log(loginUser.userName);
-    console.log(loginUser.password);
     let messenge = await userService.loginUser(loginUser.userName, loginUser.password);
 
     return res.status(200).json(messenge);

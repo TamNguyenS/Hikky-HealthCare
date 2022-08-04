@@ -14,6 +14,8 @@ const initApiRoute = (app) => {
 
     router.get('/secret', userController.secret);
 
+    router.post('/singout', userController.singout);
+
     router.get('/get-all-users', userController.getAllUsers);
 
     router.post('/create-user', userController.createUser);
@@ -22,7 +24,7 @@ const initApiRoute = (app) => {
 
     router.put('/update-user/:id', userController.updateUser);
 
-    return app.use('/api/v1', router);
+    return app.use('/api/auth', router);
 
 }
 

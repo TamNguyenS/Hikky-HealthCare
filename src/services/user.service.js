@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import db from '../models/index';
+import { isExist } from './handler.service';
 import md5 from 'md5';
 
 const salt = bcrypt.genSaltSync(10);
@@ -7,41 +8,54 @@ const salt = bcrypt.genSaltSync(10);
 // handle user login
 let loginUser = async (userName, password) => {
     return new Promise(async (resolve, reject) => {
-
         try {
-            let hashpass = await bcrypt.hashSync(password, salt);
-            console.log('>>>check password login', hashpass);
+            let userData = {};
+            console.log('>>>check password login', password);
             console.log('>>>check username login', userName);
-            const case1 = await db.User.count({ where: { email: userName, password: hashpass } });
-            const case2 = await db.User.count({ where: { userName: userName, password: hashpass } });
 
-            if (case1 === 1 || case2 === 1) {
-                resolve({
-                    process: 0,
-                    susscess: true,
-                    message: 'Login successfully',
-                    data: result
-                });
+            const userNameByEmail = await isExist('email', userName);
+            const userNameByUserName = await isExist('userName', userName);
+            console.log('>>>check username login', userNameByUserName);
+            if (userNameByUserName) {
+                const passwordDb = await db.User.findOne({ where: { username: userName } });
+                const result = await bcrypt.compareSync(password, passwordDb.password);
+                if (result) {
+                    resolve({
+                        process: 0,
+                        susscess: true,
+                        message: 'Login successfully',
+                    });
+                }
+                else {
+                    reject({
+                        process: 1,
+                        susscess: false,
+                        message: 'User name or password is incorrect',
+                    });
+                }
             }
             else {
                 resolve({
                     process: 1,
                     susscess: false,
-                    message: 'User name or password is incorrect'
+                    message: 'User name or password is incorrect',
                 });
             }
 
         }
         catch (err) {
-            console.log(`error from loginUser ${err.message}`)
+            console.log(`error from loginUser 1 ${err.message}`)
+            // throw new Error(err.message);
             reject({
                 process: 1,
+                susscess: false,
                 message: 'User name or password is incorrect'
             });
         }
     });
 
 }
+
 
 // handle user register 
 let createNewUser = async (data) => {
@@ -71,7 +85,7 @@ let createNewUser = async (data) => {
             });
         }
         catch (err) {
-            console.le(`error from createNewUser ${err.message}`)
+            console.log(`error from createNewUser ${err.message}`)
             reject({
                 process: 1,
                 susscess: true,
@@ -92,7 +106,7 @@ let hashUserPassword = async (password) => {
             resolve(hashpass);
         }
         catch (err) {
-            console.le(`error from hashUserPassword ${err.message}`);
+            console.log(`error from hashUserPassword ${err.message}`);
             reject(` error from hashUserPassword ${err.message}`);
         }
     })
