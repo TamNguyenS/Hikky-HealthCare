@@ -3,6 +3,7 @@ import configViewEngine from './config/viewEngine.config';
 import connectDB from './config/connectDB.config';
 import initWebRoute from './router/web.router';
 import initApiRoute from './router/api.router';
+// import cookieParser from "cookie-parser";
 import 'dotenv/config'
 
 const app = express();
@@ -12,6 +13,7 @@ console.log(process.env.PORT);
 
 // middlewares
 app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
 app.use(express.json());
 
 configViewEngine(app);

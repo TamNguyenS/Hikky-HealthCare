@@ -14,27 +14,11 @@ const validateUserRegistration = (schema) => {
             const errorBody = await schema.validate(req.body, { abortEarly: false });
             console.log(`>>>check error body ` + JSON.stringify(errorBody.error));
 
-            const checkPhone = await isExist(`phone`, req.body.phone);
-            const checkUsername = await isExist(`userName`, req.body.userName);
-            const checkEmail = await isExist(`email`, req.body.email);
-
-            checkPhone === false ? phoneExit = false : phoneExit = true;
-            checkUsername === false ? usernameExit = false : usernameExit = true;
-            checkEmail === false ? emailExit = false : emailExit = true;
 
             if (errorBody.error) {
                 return res.status(400).json({
                     status: 400,
                     error: errorBody.error === undefined ? 'nothing' : errorBody.error.details.map(error => error.message),
-                    message: 'register failed',
-                });
-            }
-            if (phoneExit || usernameExit || emailExit) {
-                return res.status(403).json({
-                    status: 403,
-                    phoneExit: phoneExit,
-                    emailExit: emailExit,
-                    usernameExit: usernameExit,
                     message: 'register failed',
                 });
             }
@@ -49,6 +33,35 @@ const validateUserRegistration = (schema) => {
         }
 
     }
+}
+
+const checkExist = async (req, res, next) => {
+    try {
+        const checkPhone = await isExist(`phone`, req.value.body.phone);
+        const checkUsername = await isExist(`userName`, req.value.body.userName);
+        const checkEmail = await isExist(`email`, req.value.body.email);
+
+        checkPhone === false ? phoneExit = false : phoneExit = true;
+        checkUsername === false ? usernameExit = false : usernameExit = true;
+        checkEmail === false ? emailExit = false : emailExit = true;
+
+        if (phoneExit || usernameExit || emailExit) {
+            return res.status(403).json({
+                status: 403,
+                phoneExit: phoneExit,
+                emailExit: emailExit,
+                usernameExit: usernameExit,
+                message: 'register failed',
+            });
+          
+        }
+        next();
+    }
+    catch (err) {
+        console.log(err);
+
+    }
+
 }
 const validateUserLogin = (schema) => {
     return async (req, res, next) => {
@@ -87,17 +100,17 @@ const isExist = async (type, data) => {
 }
 const checkRolesExisted = (req, res, next) => {
     if (req.body.roles) {
-      for (let i = 0; i < req.body.roles.length; i++) {
-        if (!ROLES.includes(req.body.roles[i])) {
-          res.status(400).send({
-            message: "Failed! Role does not exist = " + req.body.roles[i]
-          });
-          return;
+        for (let i = 0; i < req.body.roles.length; i++) {
+            if (!ROLES.includes(req.body.roles[i])) {
+                res.status(400).send({
+                    message: "Failed! Role does not exist = " + req.body.roles[i]
+                });
+                return;
+            }
         }
-      }
     }
     next();
-  }
+}
 // custom validation for user name but i'm lazy enough
 const schemas = {
     registerUserSchema: Joi.object().keys({
@@ -134,4 +147,5 @@ module.exports = {
     validateUserRegistration,
     validateUserLogin,
     schemas,
+    checkExist
 }
