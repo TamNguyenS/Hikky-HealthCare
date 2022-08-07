@@ -6,7 +6,7 @@ import authController from '../controller/auth.controller';
 // import schemas from './middleware/user.middleware';
 // const { validateUserRegistration, schemas } = require('../middleware/user.middleware');
 import { validateUserRegistration, validateUserLogin, schemas, checkExist } from '../middleware/user.middleware';
-import verifyToken from '../middleware/auth.verifyToken';
+import { verifyRoleUser, verifyToken } from '../middleware/auth.verifyToken';
 // import asyncHandler from '../middleware/async.handler';
 const router = express.Router();
 
@@ -15,15 +15,15 @@ const initApiRoute = (app) => {
 
     router.post('/login', validateUserLogin(schemas.authLoginUser), authController.loginUser);
 
-    router.get('/secret', authController.secret);
+    router.get('/secret',verifyRoleUser,  authController.secret);
 
-    router.post('/singout', authController.logoutUser);
+    router.post('/singout',verifyRoleUser, authController.logoutUser);
 
     router
-        .get('/user', verifyToken, userController.getAllUsers)
-        .post('/user',verifyToken, userController.createUser)
-        .delete('/user/:id', verifyToken, userController.deleteUser)
-        .put('/user/:id', verifyToken, userController.updateUser);
+        .get('/user', verifyRoleUser, userController.getAllUsers)
+        .post('/user', verifyRoleUser, userController.createUser)
+        .delete('/user/:id', verifyRoleUser, userController.deleteUser)
+        .put('/user/:id', verifyRoleUser, userController.updateUser);
 
 
     return app.use('/api/auth', router);

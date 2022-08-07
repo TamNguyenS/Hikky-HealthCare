@@ -1,9 +1,11 @@
+// need more features redis 
 import express from 'express';
 import configViewEngine from './config/viewEngine.config';
 import connectDB from './config/connectDB.config';
 import initWebRoute from './router/web.router';
 import initApiRoute from './router/api.router';
-// import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
+import cors from 'cors';
 import 'dotenv/config'
 
 const app = express();
@@ -12,8 +14,9 @@ const port = process.env.PORT || 8888;
 console.log(process.env.PORT);
 
 // middlewares
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-// app.use(cookieParser());
+app.use(cookieParser());
 app.use(express.json());
 
 configViewEngine(app);

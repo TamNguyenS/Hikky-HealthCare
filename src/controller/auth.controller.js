@@ -9,7 +9,7 @@ const encodedAccessToken = (userId) => {
         iss: 'hikkywannaflyauthaccesstoken',
         sub: userId,
         role: 'user',
-        timecreate: new Date().getTime(),
+        timeatvn: new Date().getTime(),
     }, ACCESS_TOKEN_LIFE, { expiresIn: '40s' });
 }
 
@@ -18,7 +18,7 @@ const encodedRefreshToken = (userId) => {
         iss: 'hikkywannaflyauthrefreshtoken',
         sub: userId,
         role: 'user',
-        timecreate: new Date().getTime(),
+        timeatvn: new Date().getTime(),
     }, ACCESS_TOKEN_SECRET, { expiresIn: '41s' });
 }
 
@@ -37,36 +37,96 @@ const registerUser = async (req, res) => {
 }
 
 const loginUser = async (req, res) => {
-    const { userName, password } = req.value.body;
+    try {
+        const { userName, password } = req.value.body;
 
-    const loginUser = new db.User({ userName, password });
+        const loginUser = new db.User({ userName, password });
 
-    console.log('>>working on : loginUser');
+        console.log('>>working on : loginUser');
 
-    // grenarate a access token
-    // const accessToken = encodedAccessToken(userName);
-    let { idUser, status, ...messenge } = await authService.loginUser(loginUser.userName, loginUser.password);
-    if (status === 200) {
-        const accessToken = encodedAccessToken(idUser);
-        const refreshToken = encodedRefreshToken(idUser);
-
-        return res.status(status).json({ ...messenge, accessToken, refreshToken });
+        // grenarate a access token
+        // const accessToken = encodedAccessToken(userName);
+        let { idUser, status, ...messenge } = await authService.loginUser(loginUser.userName, loginUser.password);
+        console.log('>>check idyser', idUser);
+        if (status === 200) {
+            const accessToken = encodedAccessToken(idUser);
+            const refreshToken = encodedRefreshToken(idUser);
+            const updateRefreshToken = await db.User.update({ refreshToken: `${refreshToken}` }, { where: { id: `${idUser.idUser}` } });
+            res.setHeader('Authorization', accessToken);
+            res.cookie('refresh_token', refreshToken, {
+                httpOnly: true,
+                secure: false, // set to true if your using https
+                path: '/',
+                sameSite: 'Strict',
+            });
+            return res.status(status).json({ ...messenge, accessToken });
+        }
+        return res.status(status).json(messenge);
     }
-    return res.status(status).json(messenge);
+    catch (err) {
+        console.log(`error from loginUser ${err.message}`)
+        return res.status(500).json(err.message);
+    }
+
 }
 
 const logoutUser = async (req, res) => {
-
+    console.log('>>working on : logoutUser');
+    try {
+        const { refreshToken } = req.cookies('refresh_token');
+        const isRefreshTokenExistOnDb = await db.User.count({ where: { refreshToken: `${refreshToken}` }, attributes: ['refreshToken'] });
+        if (isRefreshTokenExistOnDb !== 1) {
+            return res.status(403).json("Refresh token is not valid");
+        }
+        const deleteRefreshToken = await db.User.update({ refreshToken: null }, { where: { refreshToken: `${refreshToken}` } });
+        res.setHeader('Authorization', null);
+        return res.status(200).json("You're logged out");
+    }
+    catch (err) {
+        console.log(`error from logoutUser ${err.message}`);
+        return res.status(500).json(err.message);
+    }
 
 }
 
 
 const secret = async (req, res) => {
     console.log('>>working on : secret');
-    let messenge = await authService.loginUser(req.body.userName, req.body.password);
-    return res.status(200).json(messenge);
+    try {
+        const oldRefreshtoken = req.cookies('refresh_token');
+        if (!oldRefreshtoken) return res.status(401).json("You're not authenticated");
+        const isRefreshTokenExistOnDb = await db.User.count({ where: { refreshToken: `${oldRefreshtoken}` }, attributes: ['refreshToken'] });
+        if (isRefreshTokenExistOnDb !== 1) {
+            return res.status(403).json("Refresh token is not valid");
+        }
+        JWT.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, userInfo) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json(err.message);
+            }
+            const newaccessToken = encodedAccessToken(userInfo.sub.idUser);
+            const newrefreshToken = encodedRefreshToken(userInfo.sub.idUser);
+            // const setNewRefreshToken = await db.User.update({ refreshToken: `${newrefreshToken}` }, { where: { id: `${userInfo.sub.idUser}` } });
+            res.cookie("refresh_token", newrefreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict",
+            });
+            res.status(200).json({
+                accessToken: newaccessToken,
+                refreshToken: newrefreshToken,
+            });
+        });
+
+    }
+    catch (err) {
+        console.log(`error from secret ${err.message}`);
+        return res.status(500).json(err.message);
+    }
 
 }
+
 module.exports = {
     registerUser,
     loginUser,
