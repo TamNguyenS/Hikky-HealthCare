@@ -73,12 +73,13 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
     console.log('>>working on : logoutUser');
     try {
-        const { refreshToken } = req.cookies('refresh_token');
+        const refreshToken = req.cookies('refresh_token');
         const isRefreshTokenExistOnDb = await db.User.count({ where: { refreshToken: `${refreshToken}` }, attributes: ['refreshToken'] });
         if (isRefreshTokenExistOnDb !== 1) {
             return res.status(403).json("Refresh token is not valid");
         }
         const deleteRefreshToken = await db.User.update({ refreshToken: null }, { where: { refreshToken: `${refreshToken}` } });
+        res.clearCookie("refresh_token");
         res.setHeader('Authorization', null);
         return res.status(200).json("You're logged out");
     }

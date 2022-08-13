@@ -15,10 +15,13 @@ const initApiRoute = (app) => {
 
     router.post('/login', validateUserLogin(schemas.authLoginUser), authController.loginUser);
 
-    router.get('/secret',verifyRoleUser,  authController.secret);
+    router.get('/secret', verifyRoleUser, authController.secret);
 
-    router.post('/singout',verifyRoleUser, authController.logoutUser);
+    router.post('/singout', verifyRoleUser, authController.logoutUser);
 
+    router.post('/hikkywannafly', (req, res, next) => {
+        res.send('hello hikkywannafly');
+    })
     router
         .get('/user', verifyRoleUser, userController.getAllUsers)
         .post('/user', verifyRoleUser, userController.createUser)
