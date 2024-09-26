@@ -1,28 +1,35 @@
 import express from 'express';
 import userController from '../controller/user.controller';
+import authController from '../controller/auth.controller';
 // import { validateUserRegistration, schemas } from '../middleware/user.middleware';
 // import validateUserRegistration from '../middleware/user.middleware';
 // import schemas from './middleware/user.middleware';
 // const { validateUserRegistration, schemas } = require('../middleware/user.middleware');
-import { validateUserRegistration, validateUserLogin, schemas } from '../middleware/user.middleware';
+import { validateUserRegistration, validateUserLogin, schemas, checkExist } from '../middleware/user.middleware';
+import { verifyRoleUser, verifyToken } from '../middleware/auth.verifyToken';
+// import asyncHandler from '../middleware/async.handler';
 const router = express.Router();
 
 const initApiRoute = (app) => {
-    router.post('/register', validateUserRegistration(schemas.registerUserSchema), userController.registerUser);
+    router.post('/register', validateUserRegistration(schemas.registerUserSchema), checkExist, authController.registerUser);
 
-    router.post('/login', validateUserLogin(schemas.authLoginUser), userController.loginUser);
+    router.post('/login', validateUserLogin(schemas.authLoginUser), authController.loginUser);
 
-    router.get('/secret', userController.secret);
+    router.get('/secret', verifyRoleUser, authController.secret);
 
-    router.get('/get-all-users', userController.getAllUsers);
+    router.post('/singout', verifyRoleUser, authController.logoutUser);
 
-    router.post('/create-user', userController.createUser);
+    router.post('/hikkywannafly', (req, res, next) => {
+        res.send('hello hikkywannafly');
+    })
+    router
+        .get('/user', verifyRoleUser, userController.getAllUsers)
+        .post('/user', verifyRoleUser, userController.createUser)
+        .delete('/user/:id', verifyRoleUser, userController.deleteUser)
+        .put('/user/:id', verifyRoleUser, userController.updateUser);
 
-    router.delete('/delete-user/:id', userController.deleteUser);
 
-    router.put('/update-user/:id', userController.updateUser);
-
-    return app.use('/api/v1', router);
+    return app.use('/api/auth', router);
 
 }
 
